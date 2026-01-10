@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Tab Switcher",
+  "version": "1.0.0",
+  "description": "Switch between the two most recent tabs using Alt+Q (Option+Q on Mac)",
+  "permissions": [
+    "tabs",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "dist/background.js"
+  },
+  "commands": {
+    "switch-tabs": {
+      "suggested_key": {
+        "default": "Alt+Q",
+        "mac": "Alt+Q"
+      },
+      "description": "Switch between the two most recent tabs"
+    }
+  }
+}

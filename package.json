@@ -1,0 +1,21 @@
+{
+  "name": "tab-switch-chrome-extension",
+  "version": "1.0.0",
+  "description": "Switch between the two most recent tabs using Alt+Q (Option+Q on Mac)",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "chrome-extension",
+    "tab-switcher",
+    "productivity"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chrome": "^0.0.273",
+    "typescript": "^5.7.2"
+  }
+}
