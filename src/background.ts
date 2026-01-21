@@ -42,9 +42,22 @@ chrome.runtime.onInstalled.addListener(async () => {
   await setTabsByWindow(tabsByWindow);
 });
 
+// Track the active tab's index for position-based switching on close
+let activeTabIndex: number | null = null;
+
 // Track tab activations
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
   const { tabId, windowId } = activeInfo;
+
+  // Update the active tab index
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    activeTabIndex = tab.index;
+  } catch {
+    activeTabIndex = null;
+  }
+
+  // Update recent tabs list
   let recentTabs = await getRecentTabsForWindow(windowId);
 
   // Remove the tab from the list if it's already there
@@ -76,13 +89,21 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
   recentTabs = recentTabs.filter(id => id !== tabId);
   await setRecentTabsForWindow(windowId, recentTabs);
 
-  // If the closed tab was the active one, switch to the next in history
-  if (wasActiveTab && recentTabs.length > 0) {
-    const nextTabId = recentTabs[0];
+  // If the closed tab was the active one, switch to the next tab by position
+  if (wasActiveTab && activeTabIndex !== null) {
     try {
-      await chrome.tabs.update(nextTabId, { active: true });
+      const allTabs = await chrome.tabs.query({ windowId });
+      if (allTabs.length > 0) {
+        // Try to activate the tab at the same index (which is the "next" tab after removal)
+        // If that index is out of bounds, activate the last tab
+        const targetIndex = Math.min(activeTabIndex, allTabs.length - 1);
+        const targetTab = allTabs.find(t => t.index === targetIndex);
+        if (targetTab?.id) {
+          await chrome.tabs.update(targetTab.id, { active: true });
+        }
+      }
     } catch (error) {
-      console.error('Error switching to next tab in history:', error);
+      console.error('Error switching to next tab by position:', error);
     }
   }
 });
@@ -97,7 +118,7 @@ chrome.windows.onRemoved.addListener(async (windowId) => {
 // Listen for the keyboard command
 chrome.commands.onCommand.addListener((command) => {
   if (command === 'switch-tabs') {
-    switchToPreviousTab();
+    void switchToPreviousTab();
   }
 });
 
@@ -109,7 +130,7 @@ async function switchToPreviousTab(): Promise<void> {
     return;
   }
 
-  const recentTabs = await getRecentTabsForWindow(currentWindow.id);
+  let recentTabs = await getRecentTabsForWindow(currentWindow.id);
 
   // Check if we have at least 2 tabs in history for this window
   if (recentTabs.length < 2) {
@@ -117,16 +138,30 @@ async function switchToPreviousTab(): Promise<void> {
     return;
   }
 
-  const previousTabId = recentTabs[1];
+  // Try to switch to a valid previous tab, cleaning up stale entries as we go
+  const invalidTabIds: number[] = [];
 
-  try {
-    // Verify the tab still exists and switch to it
-    await chrome.tabs.update(previousTabId, { active: true });
-  } catch (error) {
-    console.error('Error switching to previous tab:', error);
-    // If the tab doesn't exist anymore, remove it from history
-    let updatedTabs = await getRecentTabsForWindow(currentWindow.id);
-    updatedTabs = updatedTabs.filter(id => id !== previousTabId);
-    await setRecentTabsForWindow(currentWindow.id, updatedTabs);
+  for (let i = 1; i < recentTabs.length; i++) {
+    const tabId = recentTabs[i];
+    try {
+      // Verify the tab still exists and switch to it
+      await chrome.tabs.update(tabId, { active: true });
+      // Success - clean up any invalid tabs we found
+      if (invalidTabIds.length > 0) {
+        recentTabs = recentTabs.filter(id => !invalidTabIds.includes(id));
+        await setRecentTabsForWindow(currentWindow.id, recentTabs);
+      }
+      return;
+    } catch {
+      // Tab doesn't exist, mark for cleanup and try next one
+      invalidTabIds.push(tabId);
+    }
+  }
+
+  // All previous tabs were invalid - clean them all up
+  if (invalidTabIds.length > 0) {
+    recentTabs = recentTabs.filter(id => !invalidTabIds.includes(id));
+    await setRecentTabsForWindow(currentWindow.id, recentTabs);
+    console.log('Cleaned up stale tab IDs:', invalidTabIds);
   }
 }
