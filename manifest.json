@@ -8,7 +8,8 @@
     "storage"
   ],
   "background": {
-    "service_worker": "dist/background.js"
+    "service_worker": "dist/background.js",
+    "type": "module"
   },
   "commands": {
     "switch-tabs": {
@@ -17,6 +18,13 @@
         "mac": "Alt+Q"
       },
       "description": "Switch between the two most recent tabs"
+    },
+    "switch-windows": {
+      "suggested_key": {
+        "default": "Alt+S",
+        "mac": "Alt+S"
+      },
+      "description": "Move active tab to another window"
     }
   }
 }
