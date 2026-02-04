@@ -1,11 +1,12 @@
 # Tab Switcher Chrome Extension
 
-A Chrome extension that allows you to quickly switch between your two most recent tabs using a keyboard shortcut.
+A Chrome extension that provides keyboard shortcuts for efficient tab management.
 
 ## Features
 
-- Switch between the current tab and the last active tab with a single keyboard shortcut
-- Uses **Alt+Q** (or **Option+Q** on Mac)
+- **Switch Tabs** (Alt+Q) - Toggle between your two most recent tabs
+- **Move Tab to Another Window** (Alt+S) - Move the active tab to another existing window
+- **Duplicate Tab** (Alt+D) - Duplicate the active tab
 - Built with Manifest V3 (latest Chrome extension standard)
 - Lightweight and fast
 
@@ -50,9 +51,11 @@ This will watch for changes in the TypeScript files and automatically recompile 
 
 ## Usage
 
-1. Navigate between different tabs in Chrome
-2. Press **Alt+Q** (Windows/Linux) or **Option+Q** (Mac) to switch between the current tab and the last active tab
-3. Press the shortcut again to switch back
+| Command | Windows/Linux | Mac | Description |
+|---------|---------------|-----|-------------|
+| Switch Tabs | Alt+Q | Option+Q | Toggle between current and last active tab |
+| Move to Window | Alt+S | Option+S | Move active tab to another window |
+| Duplicate Tab | Alt+D | Option+D | Duplicate the active tab |
 
 ### Customizing the Keyboard Shortcut
 
@@ -64,7 +67,9 @@ If you want to change the keyboard shortcut:
 
 ## How It Works
 
-The extension tracks your tab activation history and maintains a list of the two most recent tabs. When you trigger the keyboard shortcut, it switches to the previously active tab, making it easy to toggle between two tabs you're working with.
+- **Switch Tabs**: Tracks your tab activation history and maintains a list of recent tabs per window. Pressing the shortcut switches to the previously active tab.
+- **Move to Window**: Finds the first available browser window (excluding the current one) and moves the active tab there.
+- **Duplicate Tab**: Creates an exact copy of the current tab using Chrome's built-in duplication.
 
 ## Technical Details
 

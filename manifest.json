@@ -21,8 +21,8 @@
     },
     "switch-windows": {
       "suggested_key": {
-        "default": "Alt+S",
-        "mac": "Alt+S"
+        "default": "Alt+M",
+        "mac": "Alt+M"
       },
       "description": "Move active tab to another window"
     },
